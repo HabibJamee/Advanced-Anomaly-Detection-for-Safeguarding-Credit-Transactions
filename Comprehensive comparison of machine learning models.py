@@ -37,3 +37,26 @@ for i,col in enumerate(df.columns[:-1], 1):
 
 plt.tight_layout()
 plt.show()
+pd.set_option('display.max_columns', None)
+df.groupby('Class').mean()
+df.groupby('Class').max()
+sns.boxplot(x=df['Class'], y=df['Amount'])
+plt.title('Transaction Amount by each Class')
+plt.show()
+
+x1 = df[df['Class']==0]['Amount'].mean()
+x2 = df[df['Class']==1]['Amount'].mean()
+std1 = df[df['Class']==0]['Amount'].std()
+std2 = df[df['Class']==1]['Amount'].std()
+n = df[df['Class']==0].shape[0]
+m = df[df['Class']==1].shape[0]
+
+z = (x1 - x2) / np.sqrt((std1**2 / n) + (std2**2 / m))
+print(f'z statistic: {z:.3f}')
+
+lower_critical_value = -1.96
+upper_critical_value = 1.96
+if z < lower_critical_value or z > upper_critical_value:
+    print("There is a difference between the means of the two populations.")
+else:
+    print("There is no significant difference between the means of the two populations.")
