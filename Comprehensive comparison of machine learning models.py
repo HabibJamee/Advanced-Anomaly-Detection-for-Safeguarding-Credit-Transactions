@@ -60,3 +60,17 @@ if z < lower_critical_value or z > upper_critical_value:
     print("There is a difference between the means of the two populations.")
 else:
     print("There is no significant difference between the means of the two populations.")
+
+majority_class_df = df[df['Class'] == 0]
+minority_class_df = df[df['Class'] == 1]
+
+random_subset_majority_class = majority_class_df.sample(n=10000, random_state=42)
+df = pd.concat([random_subset_majority_class, minority_class_df])
+df.shape
+df.drop('Time', axis=1)
+X = df.drop('Class', axis=1).values
+y = df['Class'].values
+n_splits = 5
+stratified_kfold = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=42)
+
+
