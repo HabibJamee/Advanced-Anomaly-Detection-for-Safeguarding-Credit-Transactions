@@ -73,4 +73,74 @@ y = df['Class'].values
 n_splits = 5
 stratified_kfold = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=42)
 
+model = LogisticRegression()
 
+accuracy_scores = []
+precision_scores = []
+recall_scores = []
+f1_scores = []
+
+for train_index, test_index in stratified_kfold.split(X, y):
+    X_train, X_test = X[train_index], X[test_index]
+    y_train, y_test = y[train_index], y[test_index]
+
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+    probabilities = model.predict_proba(X_test)[:, 1]
+
+    accuracy_scores.append(accuracy_score(y_test, y_pred))
+    precision_scores.append(precision_score(y_test, y_pred, pos_label=1))
+    recall_scores.append(recall_score(y_test, y_pred))
+    f1_scores.append(f1_score(y_test, y_pred))
+
+print("Mean Accuracy:", sum(accuracy_scores) / n_splits)
+print("Mean Precision:", sum(precision_scores) / n_splits)
+print("Mean Recall:", sum(recall_scores) / n_splits)
+
+log_model =LogisticRegression()
+
+n_splits=5
+kfolds = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=42)
+thresholds = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+
+mean_recall_values = []
+mean_precision_values = []
+mean_f1_values = []
+
+for threshold in thresholds:
+    recall_values = []
+    precision_values = []
+    f1_values = []
+
+    for train_index, test_index in kfolds.split(X, y):
+        X_train, y_train = X[train_index], y[train_index]
+        X_test, y_test = X[test_index], y[test_index]
+
+        log_model.fit(X_train, y_train)
+        probabilities = log_model.predict_proba(X_test)[:, 1]
+
+        predictions = (probabilities > threshold).astype(int)
+        precision, recall, _, _ = precision_recall_fscore_support(y_test, predictions, average='binary')
+
+        recall_values.append(recall)
+        precision_values.append(precision)
+        f1 = 2 * (precision * recall) / (precision + recall)
+        f1_values.append(f1)
+
+    mean_recall = np.mean(recall_values)
+    mean_precision = np.mean(precision_values)
+    mean_f1 = np.mean(f1_values)
+
+    mean_recall_values.append(mean_recall)
+    mean_precision_values.append(mean_precision)
+    mean_f1_values.append(mean_f1)
+
+    print(f"Threshold: {threshold:.2f}, Mean Precision: {mean_precision:.2f}, Mean Recall: {mean_recall:.2f}, Mean F1 Score: {mean_f1:.2f}")
+
+print(f"Overall Mean Precision: {np.mean(mean_precision_values):.3f}, Overall Mean Recall: {np.mean(mean_recall_values):.3f}, Overall Mean F1 Score: {np.mean(mean_f1_values):.2f}")
+
+best_threshold_index = np.argmax(mean_recall_values)
+best_threshold = thresholds[best_threshold_index]
+
+print(f"Best Threshold: {best_threshold:.2f} with Mean Recall: {np.max(mean_recall_values):.4f} and Mean Precision {mean_precision_values[best_threshold_index]:.4f}")
+log_reg_recall = np.max(mean_recall_values)
